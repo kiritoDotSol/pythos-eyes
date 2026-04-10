@@ -682,6 +682,7 @@ const App: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState({ current: 0, total: 0, fileName: '' });
   const [totalPool, setTotalPool] = useState<number>(100000);
+  const [error, setError] = useState<string | null>(null);
 
   const rankedResults = useMemo(() => [...results].sort((a, b) => b.score - a.score), [results]);
   const topFive = useMemo(() => rankedResults.slice(0, 5), [rankedResults]);
@@ -700,6 +701,7 @@ const App: React.FC = () => {
     if (!files || files.length === 0) return;
     
     setIsAnalyzing(true);
+    setError(null);
     const filesArray = Array.from(files) as File[];
     setAnalysisProgress({ current: 0, total: filesArray.length, fileName: '' });
     
@@ -737,11 +739,14 @@ const App: React.FC = () => {
         };
         setResults(prev => [newResult, ...prev]);
       }
-    } catch (error: any) {
-      console.error("Analysis failed:", error);
+    } catch (err: any) {
+      console.error("Analysis failed:", err);
+      setError(err.message || "Analysis failed. Please check your API key configuration.");
     } finally {
       setIsAnalyzing(false);
       setAnalysisProgress({ current: 0, total: 0, fileName: '' });
+      // Reset the file input so the same file can be uploaded again if needed
+      e.target.value = '';
     }
   };
 
@@ -797,6 +802,27 @@ const App: React.FC = () => {
                 </div>
               </div>
             </label>
+            
+            <AnimatePresence>
+              {error && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="absolute -bottom-24 left-0 right-0 p-4 bg-rose-500/10 border border-rose-500/30 rounded-2xl backdrop-blur-md flex items-start gap-4 shadow-2xl"
+                >
+                  <AlertTriangle className="w-6 h-6 text-rose-400 shrink-0 mt-1" />
+                  <div className="flex-1">
+                    <h4 className="text-rose-400 font-bold text-sm uppercase tracking-wider mb-1">Analysis Failed</h4>
+                    <p className="text-rose-300/80 text-xs font-mono">{error}</p>
+                    <p className="text-white/40 text-[10px] font-mono mt-2">If deployed on Vercel, ensure GEMINI_API_KEY is set in your Vercel Environment Variables.</p>
+                  </div>
+                  <button onClick={() => setError(null)} className="p-1 hover:bg-rose-500/20 rounded-lg text-rose-400 transition-colors">
+                    <X className="w-4 h-4" />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
