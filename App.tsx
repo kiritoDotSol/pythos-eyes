@@ -8,6 +8,7 @@ import {
   Target, AlertTriangle, CheckCircle2, Cpu,
   Star, Gem
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { AnalysisResult, LeaderboardEntry } from './types';
 import { analyzeImage } from './services/geminiService';
 
@@ -253,23 +254,43 @@ const Modal: React.FC<{ isOpen: boolean; onClose: () => void; children: React.Re
 };
 
 const Header = () => (
-  <header className="py-16 text-center relative">
+  <motion.header 
+    initial={{ opacity: 0, y: -20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.8, ease: "easeOut" }}
+    className="py-16 text-center relative"
+  >
     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-purple-600/10 blur-[150px] rounded-full pointer-events-none"></div>
-    <div className="inline-flex items-center gap-4 px-6 py-2 bg-purple-900/20 border border-purple-500/30 rounded-full mb-8 backdrop-blur-md">
+    <motion.div 
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ delay: 0.3, duration: 0.5 }}
+      className="inline-flex items-center gap-4 px-6 py-2 bg-purple-900/20 border border-purple-500/30 rounded-full mb-8 backdrop-blur-md"
+    >
       <Activity className="w-4 h-4 text-purple-400 animate-pulse" />
       <span className="text-[10px] font-black font-mono tracking-[0.3em] text-purple-200">SYSTEM STATUS: OPTICAL SCANNING ACTIVE</span>
-    </div>
+    </motion.div>
     <h1 className="text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-purple-300 to-indigo-500 mb-4 drop-shadow-[0_0_35px_rgba(168,85,247,0.2)]">
       Pythos Eyes
     </h1>
     <div className="flex items-center justify-center gap-6">
-      <div className="h-[1px] w-32 bg-gradient-to-r from-transparent to-purple-500/50"></div>
+      <motion.div 
+        initial={{ width: 0 }}
+        animate={{ width: 128 }}
+        transition={{ delay: 0.5, duration: 1 }}
+        className="h-[1px] bg-gradient-to-r from-transparent to-purple-500/50"
+      ></motion.div>
       <p className="text-purple-300/80 font-mono tracking-[0.5em] uppercase text-[11px] font-bold">
         FORENSIC ARTIFICIAL INTELLIGENCE LAB
       </p>
-      <div className="h-[1px] w-32 bg-gradient-to-l from-transparent to-purple-500/50"></div>
+      <motion.div 
+        initial={{ width: 0 }}
+        animate={{ width: 128 }}
+        transition={{ delay: 0.5, duration: 1 }}
+        className="h-[1px] bg-gradient-to-l from-transparent to-purple-500/50"
+      ></motion.div>
     </div>
-  </header>
+  </motion.header>
 );
 
 const WinnersPodium: React.FC<{ topResults: AnalysisResult[], totalPool: number }> = ({ topResults, totalPool }) => {
@@ -559,7 +580,14 @@ const AnalysisCard: React.FC<{ result: AnalysisResult; onDelete: (id: string) =>
 
   return (
     <>
-      <div className={`group relative bg-[#1c1131] border rounded-[2rem] overflow-visible transition-all duration-700 hover:-translate-y-4 ${isWinner ? config[rank] : 'border-white/5 hover:border-purple-500/30 shadow-2xl'}`}>
+      <motion.div 
+        layout
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ duration: 0.5 }}
+        className={`group relative bg-[#1c1131] border rounded-[2rem] overflow-visible transition-all duration-700 hover:-translate-y-4 ${isWinner ? config[rank] : 'border-white/5 hover:border-purple-500/30 shadow-2xl'}`}
+      >
         <div className="aspect-square overflow-hidden relative rounded-t-[2rem]">
           <img src={result.imageUrl} alt={result.name} className={`w-full h-full object-cover transition-all duration-1000 group-hover:scale-110 ${isWinner ? 'grayscale-0' : 'grayscale-[0.4] group-hover:grayscale-0'}`} />
           <div className="absolute top-6 right-6 flex flex-col gap-3 z-40">
@@ -585,7 +613,7 @@ const AnalysisCard: React.FC<{ result: AnalysisResult; onDelete: (id: string) =>
             <button onClick={() => downloadImage(result.imageUrl, result.name)} className="p-4 bg-white/5 border border-white/10 rounded-2xl text-white/50 hover:text-white transition-all"><Download className="w-5 h-5" /></button>
           </div>
         </div>
-      </div>
+      </motion.div>
       <Modal isOpen={showDetails} onClose={() => setShowDetails(false)}>
         <div className="flex flex-col gap-10">
           <div className="flex items-center gap-8">
@@ -783,9 +811,11 @@ const App: React.FC = () => {
               <div className="py-40 flex flex-col items-center justify-center border-2 border-dashed border-white/10 rounded-[4rem] bg-white/2 shadow-inner"><ImageIcon className="w-12 h-12 text-white/10 mb-8" /><p className="text-white/30 font-mono uppercase tracking-[0.5em] text-xs">AWAITING INPUT</p></div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
-                {results.map((result) => (
-                  <AnalysisCard key={result.id} result={result} onDelete={deleteResult} rank={rankedResults.findIndex(r => r.id === result.id) + 1} />
-                ))}
+                <AnimatePresence mode="popLayout">
+                  {results.map((result) => (
+                    <AnalysisCard key={result.id} result={result} onDelete={deleteResult} rank={rankedResults.findIndex(r => r.id === result.id) + 1} />
+                  ))}
+                </AnimatePresence>
               </div>
             )}
           </div>
