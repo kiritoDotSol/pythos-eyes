@@ -1,0 +1,7 @@
+{
+  "name": "Pythos Eyes",
+  "description": "High-velocity AI design forensic laboratory. Analyze digital artifacts with Pythos Eyes, detect synthetic slop, and claim your place in the elite.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
